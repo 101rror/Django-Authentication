@@ -1,7 +1,7 @@
 import { createContext, useState, useEffect } from "react";
-import jwt_decode from "jwt-decode";
-import { useHistory } from "react-router-dom";
-const swal = require("sweetalert2");
+import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const AuthContext = createContext();
 
@@ -16,13 +16,13 @@ export const AuthProvider = ({ children }) => {
 
   const [user, setUser] = useState(() =>
     localStorage.getItem("authTokens")
-      ? jwt_decode(localStorage.getItem("authTokens"))
+      ? jwtDecode(JSON.parse(localStorage.getItem("authTokens")).access)
       : null,
   );
 
   const [loading, setLoading] = useState(true);
 
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const loginUser = async (email, password) => {
     const response = await fetch("http://127.0.0.1:8000/api/token/", {
@@ -35,33 +35,33 @@ export const AuthProvider = ({ children }) => {
         password,
       }),
     });
+
     const data = await response.json();
-    console.log(data);
 
     if (response.status === 200) {
-      console.log("Logged In");
       setAuthTokens(data);
-      setUser(jwt_decode(data.access));
+      setUser(jwtDecode(data.access));
+
       localStorage.setItem("authTokens", JSON.stringify(data));
-      history.push("/");
-      swal.fire({
+
+      navigate("/");
+
+      Swal.fire({
         title: "Login Successful",
         icon: "success",
         toast: true,
-        timer: 6000,
-        position: "top-right",
+        timer: 3000,
+        position: "top-end",
         timerProgressBar: true,
         showConfirmButton: false,
       });
     } else {
-      console.log(response.status);
-      console.log("there was a server issue");
-      swal.fire({
-        title: "Username or passowrd does not exists",
+      Swal.fire({
+        title: "Username or Password does not exist",
         icon: "error",
         toast: true,
-        timer: 6000,
-        position: "top-right",
+        timer: 3000,
+        position: "top-end",
         timerProgressBar: true,
         showConfirmButton: false,
       });
@@ -81,26 +81,27 @@ export const AuthProvider = ({ children }) => {
         password2,
       }),
     });
+
     if (response.status === 201) {
-      history.push("/login");
-      swal.fire({
-        title: "Registration Successful, Login Now",
+      navigate("/login");
+
+      Swal.fire({
+        title: "Registration Successful",
+        text: "Login Now",
         icon: "success",
         toast: true,
-        timer: 6000,
-        position: "top-right",
+        timer: 3000,
+        position: "top-end",
         timerProgressBar: true,
         showConfirmButton: false,
       });
     } else {
-      console.log(response.status);
-      console.log("there was a server issue");
-      swal.fire({
-        title: "An Error Occured " + response.status,
+      Swal.fire({
+        title: `An Error Occurred (${response.status})`,
         icon: "error",
         toast: true,
-        timer: 6000,
-        position: "top-right",
+        timer: 3000,
+        position: "top-end",
         timerProgressBar: true,
         showConfirmButton: false,
       });
@@ -110,14 +111,17 @@ export const AuthProvider = ({ children }) => {
   const logoutUser = () => {
     setAuthTokens(null);
     setUser(null);
+
     localStorage.removeItem("authTokens");
-    history.push("/login");
-    swal.fire({
-      title: "YOu have been logged out...",
+
+    navigate("/login");
+
+    Swal.fire({
+      title: "You have been logged out",
       icon: "success",
       toast: true,
-      timer: 6000,
-      position: "top-right",
+      timer: 3000,
+      position: "top-end",
       timerProgressBar: true,
       showConfirmButton: false,
     });
@@ -135,10 +139,11 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (authTokens) {
-      setUser(jwt_decode(authTokens.access));
+      setUser(jwtDecode(authTokens.access));
     }
+
     setLoading(false);
-  }, [authTokens, loading]);
+  }, [authTokens]);
 
   return (
     <AuthContext.Provider value={contextData}>
