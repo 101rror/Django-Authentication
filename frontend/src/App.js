@@ -11,7 +11,6 @@ import Dashboard from "./views/Dashboard";
 import Loginpage from "./views/Loginpage";
 import Navbar from "./views/Navbar";
 
-
 const App = () => {
   return (
     <Router>
@@ -21,7 +20,9 @@ const App = () => {
           <Route path="/" element={<Homepage />} />
           <Route path="/login" element={<Loginpage />} />
           <Route path="/register" element={<Registerpage />} />
-          <Route path="/dashboard" element={
+          <Route
+            path="/dashboard"
+            element={
               <PrivateRoute>
                 <Dashboard />
               </PrivateRoute>
